@@ -4,20 +4,25 @@ import com.example.springlevel5.dto.CommentRequestDto;
 import com.example.springlevel5.dto.CommentResponseDto;
 import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.entity.Comment;
+import com.example.springlevel5.entity.Like;
 import com.example.springlevel5.entity.Post;
 import com.example.springlevel5.entity.User;
 import com.example.springlevel5.repository.CommentRepository;
+import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
     private final UserService userService;
     private final PostService postService;
 
@@ -75,6 +80,29 @@ public class CommentService {
                         .error("댓글 삭제 완료")
                         .build()
         );
+    }
+
+    @Transactional
+    public ResponseEntity<CommentResponseDto> likeComment(UserDetailsImpl userDetails, Long postId, Long id) {
+        User user = userDetails.getUser();
+        Comment comment = findComment(postId, id);
+
+        Optional<Like> optionalLike = likeRepository.findByUserAndComment(user, comment);
+        if (optionalLike.isPresent()) { // 이미 좋아요한 경우
+            // 좋아요 취소
+            likeRepository.delete(optionalLike.get());
+            comment.updateLike(false);
+        } else {
+            // 좋아요 하기
+            Like like = Like.builder()
+                    .user(user)
+                    .comment(comment)
+                    .build();
+            likeRepository.save(like);
+            comment.updateLike(true);
+        }
+
+        return ResponseEntity.ok(new CommentResponseDto(comment));
     }
 
     private Comment findComment(Long postId, Long id) {
