@@ -75,9 +75,7 @@ public class CommentService {
         commentRepository.delete(comment);
 
         return ResponseEntity.ok(
-                ErrorResponseDto.builder()
-                        .status(200L)
-                        .error("댓글 삭제 완료")
+                ErrorResponseDto.builder(200,"댓글 삭제 완료")
                         .build()
         );
     }
