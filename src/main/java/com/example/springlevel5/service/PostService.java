@@ -3,8 +3,10 @@ package com.example.springlevel5.service;
 import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.dto.PostRequestDto;
 import com.example.springlevel5.dto.PostResponseDto;
+import com.example.springlevel5.entity.Like;
 import com.example.springlevel5.entity.Post;
 import com.example.springlevel5.entity.User;
+import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.repository.PostRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final UserService userService;
+    private final LikeRepository likeRepository;
 
     public ResponseEntity<PostResponseDto> createPost(PostRequestDto requestDto, UserDetailsImpl userDetails) {
         Post post = new Post(requestDto, userDetails.getUser());
@@ -75,8 +79,32 @@ public class PostService {
         return ResponseEntity.ok(responseDto);
     }
 
+    @Transactional
+    public ResponseEntity<PostResponseDto> likePost(UserDetailsImpl userDetails, Long id) {
+        User user = userDetails.getUser();
+        Post post = findPost(id);
+
+        Optional<Like> optionalLike = likeRepository.findByUserAndPost(user, post);
+        if (optionalLike.isPresent()) { // 이미 좋아요한 경우
+            // 좋아요 취소
+            likeRepository.delete(optionalLike.get());
+            post.updateLike(false);
+        } else {
+            // 좋아요 하기
+            Like like = Like.builder()
+                    .user(user)
+                    .post(post)
+                    .build();
+            likeRepository.save(like);
+            post.updateLike(true);
+        }
+
+        return ResponseEntity.ok(new PostResponseDto(post));
+    }
+
     protected Post findPost(Long id) {
         return postRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
     }
+
 }

@@ -56,4 +56,10 @@ public class PostController {
                                                        @PathVariable Long id) {
         return postService.deletePost(userDetails, id);
     }
+
+    @PostMapping("/posts/{id}/likes")
+    public ResponseEntity<PostResponseDto> likePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                    @PathVariable Long id) {
+        return postService.likePost(userDetails, id);
+    }
 }
