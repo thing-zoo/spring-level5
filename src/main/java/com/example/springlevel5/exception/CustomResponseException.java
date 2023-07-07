@@ -4,14 +4,14 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class CustomRequestException extends RuntimeException{
+public class CustomResponseException extends RuntimeException{
     HttpStatus status;
 
-    public CustomRequestException(String message) {
+    public CustomResponseException(String message) {
         this(HttpStatus.BAD_REQUEST, message);
     }
 
-    public CustomRequestException(HttpStatus status, String message) {
+    public CustomResponseException(HttpStatus status, String message) {
         super(message);
         this.status = status;
     }

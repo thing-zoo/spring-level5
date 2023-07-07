@@ -6,7 +6,7 @@ import com.example.springlevel5.dto.PostResponseDto;
 import com.example.springlevel5.entity.Like;
 import com.example.springlevel5.entity.Post;
 import com.example.springlevel5.entity.User;
-import com.example.springlevel5.exception.CustomRequestException;
+import com.example.springlevel5.exception.CustomResponseException;
 import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.repository.PostRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +53,7 @@ public class PostService {
 
         if (!userService.isAdmin(user)) {
             if (!user.getUsername().equals(post.getUsername())) {
-                throw new CustomRequestException(HttpStatus.BAD_REQUEST, "작성자만 수정할 수 있습니다.");
+                throw new CustomResponseException(HttpStatus.BAD_REQUEST, "작성자만 수정할 수 있습니다.");
             }
         }
         post.update(requestDto);
@@ -79,32 +78,27 @@ public class PostService {
         return ResponseEntity.ok(responseDto);
     }
 
-    @Transactional
-    public ResponseEntity<PostResponseDto> likePost(UserDetailsImpl userDetails, Long id) {
-        User user = userDetails.getUser();
-        Post post = findPost(id);
-
-        Optional<Like> optionalLike = likeRepository.findByUserAndPost(user, post);
-        if (optionalLike.isPresent()) { // 이미 좋아요한 경우
-            // 좋아요 취소
-            likeRepository.delete(optionalLike.get());
-            post.updateLike(false);
-        } else {
-            // 좋아요 하기
-            Like like = Like.builder()
-                    .user(user)
-                    .post(post)
-                    .build();
-            likeRepository.save(like);
-            post.updateLike(true);
-        }
-
-        return ResponseEntity.ok(new PostResponseDto(post));
-    }
 
     protected Post findPost(Long id) {
         return postRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
     }
 
+    @Transactional
+    public ResponseEntity<PostResponseDto> likePost(UserDetailsImpl userDetails, Long id) {
+        Post currentPost = findPost(id);
+
+        for (Like like : currentPost.getLikes()) {
+            if(like.getUser().getId() == userDetails.getUser().getId()){
+                likeRepository.delete(like);
+                currentPost.updateLikeToPost(like);
+                return ResponseEntity.ok(new PostResponseDto(currentPost));
+            }
+        }
+        Like like = Like.builder().user(userDetails.getUser()).post(currentPost).build();
+        like = likeRepository.save(like);
+        currentPost.updateLikeToPost(like);
+
+        return ResponseEntity.ok(new PostResponseDto(currentPost));
+    }
 }

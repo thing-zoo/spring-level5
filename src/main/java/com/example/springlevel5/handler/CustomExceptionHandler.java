@@ -1,9 +1,10 @@
 package com.example.springlevel5.handler;
 
 import com.example.springlevel5.dto.ErrorResponseDto;
-import com.example.springlevel5.exception.CustomRequestException;
+import com.example.springlevel5.exception.CustomResponseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,9 +28,15 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 
-    @ExceptionHandler(CustomRequestException.class)
-    public ResponseEntity<ErrorResponseDto> handleCustomRequestException(CustomRequestException exception) {
+    @ExceptionHandler(CustomResponseException.class)
+    public ResponseEntity<ErrorResponseDto> handleCustomRequestException(CustomResponseException exception) {
         ErrorResponseDto responseDto = ErrorResponseDto.builder(exception.getStatus(), exception.getMessage()).build();
+        return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDto> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        ErrorResponseDto responseDto = ErrorResponseDto.builder(HttpStatus.BAD_REQUEST, "JSON Request Error").build();
         return ResponseEntity.status(responseDto.getStatus()).body(responseDto);
     }
 

@@ -1,9 +1,7 @@
 package com.example.springlevel5.dto;
 
 import com.example.springlevel5.entity.Post;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 
@@ -30,7 +28,7 @@ public class PostResponseDto {
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         this.comments = (post.getComments() == null) ? null : post.getComments().stream().map(CommentResponseDto::new).toList();
-        this.likeCount = post.getLikeCount();
+        this.likeCount = post.getLikes().size();
     }
 }
 

@@ -3,7 +3,6 @@ package com.example.springlevel5.controller;
 import com.example.springlevel5.dto.CommentRequestDto;
 import com.example.springlevel5.dto.CommentResponseDto;
 import com.example.springlevel5.dto.ErrorResponseDto;
-import com.example.springlevel5.jwt.JwtUtil;
 import com.example.springlevel5.security.UserDetailsImpl;
 import com.example.springlevel5.service.CommentService;
 import jakarta.validation.Valid;
