@@ -5,6 +5,7 @@ import com.example.springlevel5.dto.CommentResponseDto;
 import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.security.UserDetailsImpl;
 import com.example.springlevel5.service.CommentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts/{postId}")
+@Tag(name = "댓글 Controller")
 public class CommentController {
 
     private final CommentService commentService;
