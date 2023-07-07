@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @Getter
@@ -19,6 +20,7 @@ public class CommentResponseDto {
     private String username;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private List<CommentResponseDto> comments;
     private int likeCount;
 
     public CommentResponseDto(Comment comment) {
@@ -27,6 +29,6 @@ public class CommentResponseDto {
         this.username = comment.getUser().getUsername();
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
-        this.likeCount = comment.getLikeCount();
+        this.likeCount = comment.getLikes().size();
     }
 }

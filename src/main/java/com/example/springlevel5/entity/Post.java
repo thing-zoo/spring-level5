@@ -1,13 +1,13 @@
 package com.example.springlevel5.entity;
 
 import com.example.springlevel5.dto.PostRequestDto;
-import com.example.springlevel5.repository.PostRepository;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,9 +37,8 @@ public class Post extends Timestamped {
     @OrderBy("id desc")
     private List<Comment> comments;
 
-    @Column(name = "like_count", nullable = false)
-    @ColumnDefault("0")
-    private Integer likeCount;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Like> likes = new ArrayList<>();
 
     public Post(PostRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
@@ -53,12 +52,12 @@ public class Post extends Timestamped {
         this.content = requestDto.getContent();
     }
 
-    public void updateLike(boolean like) {
-        if (like) {
-            this.likeCount++;
-        } else {
-            this.likeCount--;
-        }
+    public void updateLikeToPost(Like like){
+        int index = this.likes.indexOf(like);
+        if(index == -1)
+            this.likes.add(like);
+        else
+            this.likes.remove(index);
     }
 }
 

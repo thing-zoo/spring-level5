@@ -4,11 +4,9 @@ import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.dto.UserRequestDto;
 import com.example.springlevel5.entity.User;
 import com.example.springlevel5.entity.UserRoleEnum;
-import com.example.springlevel5.exception.CustomRequestException;
-import com.example.springlevel5.jwt.JwtUtil;
+import com.example.springlevel5.exception.CustomResponseException;
 import com.example.springlevel5.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletResponse;
+import com.example.springlevel5.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +31,7 @@ public class UserService {
         // 회원 중복 확인
         Optional<User> checkUsername = userRepository.findByUsername(username);
         if (checkUsername.isPresent()) {
-            throw new CustomRequestException(HttpStatus.BAD_REQUEST, "중복된 사용자가 존재합니다.");
+            throw new CustomResponseException(HttpStatus.BAD_REQUEST, "중복된 사용자가 존재합니다.");
         }
 
         // 사용자 ROLE 확인
@@ -55,7 +53,15 @@ public class UserService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<ErrorResponseDto> deleteAccount(UserDetailsImpl userDetails) {
+        userRepository.delete(userDetails.getUser());
+        ErrorResponseDto responseDto = ErrorResponseDto.builder(HttpStatus.OK.value(), "회원가입 성공")
+                .build();
+        return ResponseEntity.ok(responseDto);
+    }
+
     protected boolean isAdmin(User user){
         return user.getRole().equals(UserRoleEnum.ADMIN);
     }
+
 }

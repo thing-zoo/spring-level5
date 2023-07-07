@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @ToString
 @Getter
@@ -28,12 +31,11 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "like_count", nullable = false)
-    @ColumnDefault("0")
-    private int likeCount;
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
+    private List<Like> likes = new ArrayList<>();
 
     @Builder
-    public Comment(String content, Post post, User user) {
+    public Comment(String content, Post post, User user, Comment parent) {
         this.content = content;
         this.post = post;
         this.user = user;
@@ -43,12 +45,12 @@ public class Comment extends Timestamped {
         this.content = requestDto.getContent();
     }
 
-    public void updateLike(boolean like) {
-        if (like) {
-            this.likeCount++;
-        } else {
-            this.likeCount--;
-        }
+    public void updateLikeToComment(Like like){
+        int index = this.likes.indexOf(like);
+        if(index == -1)
+            this.likes.add(like);
+        else
+            this.likes.remove(index);
     }
 }
 

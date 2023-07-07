@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -80,25 +78,19 @@ public class CommentService {
         );
     }
 
-    @Transactional
     public ResponseEntity<CommentResponseDto> likeComment(UserDetailsImpl userDetails, Long postId, Long id) {
-        User user = userDetails.getUser();
         Comment comment = findComment(postId, id);
 
-        Optional<Like> optionalLike = likeRepository.findByUserAndComment(user, comment);
-        if (optionalLike.isPresent()) { // 이미 좋아요한 경우
-            // 좋아요 취소
-            likeRepository.delete(optionalLike.get());
-            comment.updateLike(false);
-        } else {
-            // 좋아요 하기
-            Like like = Like.builder()
-                    .user(user)
-                    .comment(comment)
-                    .build();
-            likeRepository.save(like);
-            comment.updateLike(true);
+        for (Like like : comment.getLikes()) {
+            if(like.getUser().getId() == userDetails.getUser().getId()){
+                likeRepository.delete(like);
+                comment.updateLikeToComment(like);
+                return ResponseEntity.ok(new CommentResponseDto(comment));
+            }
         }
+        Like like = Like.builder().user(userDetails.getUser()).comment(comment).build();
+        like = likeRepository.save(like);
+        comment.updateLikeToComment(like);
 
         return ResponseEntity.ok(new CommentResponseDto(comment));
     }

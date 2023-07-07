@@ -3,14 +3,11 @@ package com.example.springlevel5.controller;
 import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.dto.PostRequestDto;
 import com.example.springlevel5.dto.PostResponseDto;
-import com.example.springlevel5.jwt.JwtUtil;
 import com.example.springlevel5.security.UserDetailsImpl;
 import com.example.springlevel5.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
