@@ -3,11 +3,15 @@ package com.example.springlevel5.entity;
 import com.example.springlevel5.dto.CommentRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
-@Getter
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @ToString
-@NoArgsConstructor
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "comments")
 public class Comment extends Timestamped {
@@ -27,8 +31,11 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
+    private List<Like> likes = new ArrayList<>();
+
     @Builder
-    public Comment(String content, Post post, User user) {
+    public Comment(String content, Post post, User user, Comment parent) {
         this.content = content;
         this.post = post;
         this.user = user;
@@ -36,6 +43,14 @@ public class Comment extends Timestamped {
 
     public void update(CommentRequestDto requestDto) {
         this.content = requestDto.getContent();
+    }
+
+    public void updateLikeToComment(Like like){
+        int index = this.likes.indexOf(like);
+        if(index == -1)
+            this.likes.add(like);
+        else
+            this.likes.remove(index);
     }
 }
 

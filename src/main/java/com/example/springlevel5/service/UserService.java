@@ -4,11 +4,11 @@ import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.dto.UserRequestDto;
 import com.example.springlevel5.entity.User;
 import com.example.springlevel5.entity.UserRoleEnum;
-import com.example.springlevel5.jwt.JwtUtil;
+import com.example.springlevel5.exception.CustomResponseException;
 import com.example.springlevel5.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletResponse;
+import com.example.springlevel5.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class UserService {
         // 회원 중복 확인
         Optional<User> checkUsername = userRepository.findByUsername(username);
         if (checkUsername.isPresent()) {
-            throw new IllegalArgumentException("중복된 사용자가 존재합니다.");
+            throw new CustomResponseException(HttpStatus.BAD_REQUEST, "중복된 사용자가 존재합니다.");
         }
 
         // 사용자 ROLE 확인
@@ -47,15 +47,21 @@ public class UserService {
         User user = new User(username, password, role);
         userRepository.save(user);
 
-        ErrorResponseDto responseDto = ErrorResponseDto.builder()
-                .status(201L)
-                .error("회원가입 성공")
+        ErrorResponseDto responseDto = ErrorResponseDto.builder(HttpStatus.CREATED.value(), "회원가입 성공")
                 .build();
 
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<ErrorResponseDto> deleteAccount(UserDetailsImpl userDetails) {
+        userRepository.delete(userDetails.getUser());
+        ErrorResponseDto responseDto = ErrorResponseDto.builder(HttpStatus.OK.value(), "회원가입 성공")
+                .build();
         return ResponseEntity.ok(responseDto);
     }
 
     protected boolean isAdmin(User user){
         return user.getRole().equals(UserRoleEnum.ADMIN);
     }
+
 }

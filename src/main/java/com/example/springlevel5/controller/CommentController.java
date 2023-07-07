@@ -3,7 +3,6 @@ package com.example.springlevel5.controller;
 import com.example.springlevel5.dto.CommentRequestDto;
 import com.example.springlevel5.dto.CommentResponseDto;
 import com.example.springlevel5.dto.ErrorResponseDto;
-import com.example.springlevel5.jwt.JwtUtil;
 import com.example.springlevel5.security.UserDetailsImpl;
 import com.example.springlevel5.service.CommentService;
 import jakarta.validation.Valid;
@@ -41,4 +40,10 @@ public class CommentController {
         return commentService.deleteComment(userDetails, postId, id);
     }
 
+    @PostMapping("/comments/{id}/likes")
+    public ResponseEntity<CommentResponseDto> likeComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                          @PathVariable Long postId,
+                                                          @PathVariable Long id) {
+        return commentService.likeComment(userDetails, postId, id);
+    }
 }
