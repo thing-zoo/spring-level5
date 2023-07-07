@@ -25,6 +25,13 @@ public class CommentController {
         return commentService.createComment(userDetails, postId, requestDto);
     }
 
+    @PostMapping("/comments/{id}/comments")
+    public ResponseEntity<CommentResponseDto> createCommentByComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                            @PathVariable Long postId,
+                                                            @PathVariable Long id,
+                                                            @RequestBody @Valid CommentRequestDto requestDto) {
+        return commentService.createCommentByComment(userDetails, postId, id, requestDto);
+    }
     @PutMapping("/comments/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @PathVariable Long postId,

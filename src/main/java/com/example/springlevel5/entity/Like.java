@@ -13,7 +13,9 @@ import java.util.Objects;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "likes")
 public class Like {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "like_id")
@@ -31,16 +33,4 @@ public class Like {
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Like that = (Like) o;
-        return Objects.equals(user, that.user);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(user);
-    }
 }

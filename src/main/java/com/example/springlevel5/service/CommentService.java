@@ -11,11 +11,13 @@ import com.example.springlevel5.repository.CommentRepository;
 import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j(topic = "Comment Service")
 @RequiredArgsConstructor
 public class CommentService {
 
@@ -23,7 +25,6 @@ public class CommentService {
     private final LikeRepository likeRepository;
     private final UserService userService;
     private final PostService postService;
-
 
     public ResponseEntity<CommentResponseDto> createComment(UserDetailsImpl userDetails, Long postId, CommentRequestDto requestDto){
         User currentUser = userDetails.getUser();
@@ -44,6 +45,26 @@ public class CommentService {
                 .createdAt(comment.getCreatedAt())
                 .modifiedAt(comment.getModifiedAt())
                 .build();
+
+        return ResponseEntity.status(201).body(responseDto);
+    }
+
+    public ResponseEntity<CommentResponseDto> createCommentByComment(UserDetailsImpl userDetails,
+                                                                     Long postId, Long id,
+                                                                     CommentRequestDto requestDto){
+        User currentUser = userDetails.getUser();
+        Comment currentComment = findComment(postId, id);
+
+        Comment comment = Comment.builder()
+                .content(requestDto.getContent())
+                .parent(currentComment)
+                .user(currentUser)
+                .build();
+
+        comment = commentRepository.save(comment);
+        currentComment.addChild(comment);
+
+        CommentResponseDto responseDto = new CommentResponseDto(currentComment);
 
         return ResponseEntity.status(201).body(responseDto);
     }
