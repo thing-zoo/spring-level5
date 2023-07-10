@@ -55,13 +55,9 @@ public class UserService {
 
     public ResponseEntity<ErrorResponseDto> deleteAccount(UserDetailsImpl userDetails) {
         userRepository.delete(userDetails.getUser());
-        ErrorResponseDto responseDto = ErrorResponseDto.builder(HttpStatus.OK.value(), "회원가입 성공")
+        ErrorResponseDto responseDto = ErrorResponseDto.builder(HttpStatus.OK.value(), "회원 삭제 완료")
                 .build();
         return ResponseEntity.ok(responseDto);
-    }
-
-    protected boolean isAdmin(User user){
-        return user.getRole().equals(UserRoleEnum.ADMIN);
     }
 
 }

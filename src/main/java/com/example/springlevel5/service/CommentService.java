@@ -3,10 +3,8 @@ package com.example.springlevel5.service;
 import com.example.springlevel5.dto.CommentRequestDto;
 import com.example.springlevel5.dto.CommentResponseDto;
 import com.example.springlevel5.dto.ErrorResponseDto;
-import com.example.springlevel5.entity.Comment;
-import com.example.springlevel5.entity.Like;
-import com.example.springlevel5.entity.Post;
-import com.example.springlevel5.entity.User;
+import com.example.springlevel5.dto.PostResponseDto;
+import com.example.springlevel5.entity.*;
 import com.example.springlevel5.repository.CommentRepository;
 import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
@@ -22,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final LikeRepository likeRepository;
     private final UserService userService;
     private final PostService postService;
+    private final LikeRepository likeRepository;
 
     public ResponseEntity<CommentResponseDto> createComment(UserDetailsImpl userDetails, Long postId, CommentRequestDto requestDto){
         User currentUser = userDetails.getUser();
@@ -38,13 +36,7 @@ public class CommentService {
 
         comment = commentRepository.save(comment);
 
-        CommentResponseDto responseDto = CommentResponseDto.builder()
-                .id(comment.getId())
-                .username(comment.getUser().getUsername())
-                .content(comment.getContent())
-                .createdAt(comment.getCreatedAt())
-                .modifiedAt(comment.getModifiedAt())
-                .build();
+        CommentResponseDto responseDto = new CommentResponseDto(comment);
 
         return ResponseEntity.status(201).body(responseDto);
     }
@@ -74,10 +66,7 @@ public class CommentService {
         User currentUser = userDetails.getUser();
         Comment comment = findComment(postId, id);
 
-        if(!userService.isAdmin(currentUser)){
-            if(!comment.getUser().getUsername().equals(currentUser.getUsername()))
-                throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
-        }
+        User.checkAuthority(comment.getUser(), currentUser);
         comment.update(requestDto);
 
         return ResponseEntity.status(200).body(new CommentResponseDto(comment));
@@ -86,11 +75,8 @@ public class CommentService {
     public ResponseEntity<ErrorResponseDto> deleteComment(UserDetailsImpl userDetails, Long postId, Long id) {
         User currentUser = userDetails.getUser();
         Comment comment = findComment(postId, id);
-        if(!userService.isAdmin(currentUser)){
-            if(!comment.getUser().getUsername().equals(currentUser.getUsername()))
-                throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
-        }
 
+        User.checkAuthority(comment.getUser(), currentUser);
         commentRepository.delete(comment);
 
         return ResponseEntity.ok(
@@ -99,19 +85,21 @@ public class CommentService {
         );
     }
 
+    @Transactional
     public ResponseEntity<CommentResponseDto> likeComment(UserDetailsImpl userDetails, Long postId, Long id) {
         Comment comment = findComment(postId, id);
 
-        for (Like like : comment.getLikes()) {
-            if(like.getUser().getId() == userDetails.getUser().getId()){
-                likeRepository.delete(like);
-                comment.updateLikeToComment(like);
-                return ResponseEntity.ok(new CommentResponseDto(comment));
-            }
+        LikeComment like = comment.changeLike(userDetails.getUser());
+        if(like == null){
+            like = new LikeComment(comment, userDetails.getUser());
+            like = likeRepository.save(like);
+            comment.addLike(like);
+            return ResponseEntity.ok(new CommentResponseDto(comment));
         }
-        Like like = Like.builder().user(userDetails.getUser()).comment(comment).build();
-        like = likeRepository.save(like);
-        comment.updateLikeToComment(like);
+        comment.DeleteLike(like);
+        likeRepository.delete(like);
+
+        comment = commentRepository.save(comment);
 
         return ResponseEntity.ok(new CommentResponseDto(comment));
     }

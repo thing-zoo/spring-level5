@@ -1,13 +1,16 @@
 package com.example.springlevel5.entity;
 
+import com.example.springlevel5.exception.CustomResponseException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -37,15 +40,30 @@ public class User extends Timestamped {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private List<Like> likes = new ArrayList<>();
-
     public User(String username, String password, UserRoleEnum role) {
         this.username = username;
         this.password = password;
         this.role = role;
     }
 
+    protected boolean isAdmin(){
+        return this.getRole().equals(UserRoleEnum.ADMIN);
+    }
 
+    public boolean equalId(User user){
+        return this.id == user.id;
+    }
+
+    /**
+     * original is posting User, guest is Authority User
+     * @param original
+     * @param guest
+     */
+    public static void checkAuthority(User original, User guest)
+    {
+        if(original.equalId(guest))
+            if(!guest.isAdmin())
+                throw new CustomResponseException(HttpStatus.BAD_REQUEST, "해당 내용은 작성자만 수정, 삭제 할 수 있습니다.");
+    }
 }
 

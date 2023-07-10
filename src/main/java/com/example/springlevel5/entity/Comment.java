@@ -30,8 +30,8 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
-    private List<Like> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    private List<LikeComment> likes;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
@@ -46,18 +46,27 @@ public class Comment extends Timestamped {
         this.post = post;
         this.user = user;
         this.parent = parent;
+        this.likes = new ArrayList<>();
     }
 
     public void update(CommentRequestDto requestDto) {
         this.content = requestDto.getContent();
     }
 
-    public void updateLikeToComment(Like like){
-        int index = this.likes.indexOf(like);
-        if(index == -1)
-            this.likes.add(like);
-        else
-            this.likes.remove(index);
+    public void addLike(LikeComment likeComment){
+        this.likes.add(likeComment);
+    }
+    public void DeleteLike(LikeComment likeComment){
+        this.likes.remove(likeComment);
+    }
+
+    public LikeComment changeLike(User user){
+        for (LikeComment like : likes) {
+            if(like.checkUser(user)){
+                return like;
+            }
+        }
+        return null;
     }
 
     public void addChild(Comment comment){
