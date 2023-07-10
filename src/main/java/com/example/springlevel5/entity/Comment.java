@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@ToString
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -34,11 +33,19 @@ public class Comment extends Timestamped {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE)
     private List<Like> likes = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE)
+    private List<Comment> children = new ArrayList<>();
+
     @Builder
     public Comment(String content, Post post, User user, Comment parent) {
         this.content = content;
         this.post = post;
         this.user = user;
+        this.parent = parent;
     }
 
     public void update(CommentRequestDto requestDto) {
@@ -51,6 +58,10 @@ public class Comment extends Timestamped {
             this.likes.add(like);
         else
             this.likes.remove(index);
+    }
+
+    public void addChild(Comment comment){
+        children.add(comment);
     }
 }
 

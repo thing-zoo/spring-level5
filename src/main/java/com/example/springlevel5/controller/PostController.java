@@ -7,6 +7,7 @@ import com.example.springlevel5.security.UserDetailsImpl;
 import com.example.springlevel5.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,14 @@ public class PostController {
     @GetMapping("/posts")
     public List<PostResponseDto> getPosts() {
         return postService.getPosts();
+    }
+
+    @GetMapping("/post")
+    public Page<PostResponseDto> getPosts(@RequestParam("page") int page,
+                                          @RequestParam("size") int size,
+                                          @RequestParam("sortBy") String sortBy,
+                                          @RequestParam("isAsc") boolean isAsc) {
+        return postService.getPostPage(page, size, sortBy, isAsc);
     }
 
     // 선택한 게시글 조회
