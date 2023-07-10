@@ -30,5 +30,8 @@ public class CommentResponseDto {
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
         this.likeCount = comment.getLikes().size();
+        if(comment.getChildren().size() == 0)
+            return;
+        this.comments = comment.getChildren().stream().map(CommentResponseDto::new).toList();
     }
 }
