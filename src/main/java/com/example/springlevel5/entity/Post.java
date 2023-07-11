@@ -29,22 +29,23 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String username;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @OrderBy("id desc")
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
-    private List<Like> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<LikePost> likes;
 
     public Post(PostRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.user = user;
         this.username = user.getUsername();
+        this.likes = new ArrayList<>();
     }
 
     public void update(PostRequestDto requestDto) {
@@ -52,13 +53,25 @@ public class Post extends Timestamped {
         this.content = requestDto.getContent();
     }
 
-    public void updateLikeToPost(Like like){
-        int index = this.likes.indexOf(like);
-        if(index == -1)
-            this.likes.add(like);
-        else
-            this.likes.remove(index);
+    public void addLike(LikePost likePost){
+        this.likes.add(likePost);
     }
+    public void DeleteLike(LikePost likePost){
+        this.likes.remove(likePost);
+    }
+
+    public LikePost changeLike(User user){
+        for (LikePost like : likes) {
+            if(like.checkUser(user)){
+                return like;
+            }
+        }
+        return null;
+    }
+
+//    public void updateLikeToPost(User user){
+//        this.likes.checkUser(user);
+//    }
 }
 
 
