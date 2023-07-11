@@ -48,6 +48,10 @@ public class PostController {
         return postService.getPost(id);
     }
 
+    @GetMapping("/categories/{categoryId}/posts")
+    public List<PostResponseDto> getPostsByCategory(@PathVariable Long categoryId) {
+        return postService.getPostsByCategory(categoryId);
+    }
     // 선택한 게시글 수정
     @PutMapping("/posts/{id}")
     public ResponseEntity<PostResponseDto> updatePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
