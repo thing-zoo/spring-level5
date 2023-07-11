@@ -10,5 +10,7 @@ public class PostRequestDto {
     private String title;
     @NotNull
     private String content;
+    @NotBlank
+    String category;
 }
 

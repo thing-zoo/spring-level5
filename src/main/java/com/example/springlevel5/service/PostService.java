@@ -3,9 +3,12 @@ package com.example.springlevel5.service;
 import com.example.springlevel5.dto.ErrorResponseDto;
 import com.example.springlevel5.dto.PostRequestDto;
 import com.example.springlevel5.dto.PostResponseDto;
+import com.example.springlevel5.entity.Category;
 import com.example.springlevel5.entity.LikePost;
 import com.example.springlevel5.entity.Post;
 import com.example.springlevel5.entity.User;
+import com.example.springlevel5.exception.CustomResponseException;
+import com.example.springlevel5.repository.CategoryRepository;
 import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.repository.PostRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
@@ -15,11 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +32,14 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
+    private final CategoryRepository categoryRepository;
 
     public ResponseEntity<PostResponseDto> createPost(PostRequestDto requestDto, UserDetailsImpl userDetails) {
-        Post post = new Post(requestDto, userDetails.getUser());
+        Optional<Category> checkCategory = categoryRepository.findByUser_IdAndName(userDetails.getUser().getId(), requestDto.getCategory());
+        if (checkCategory.isEmpty()) {
+            throw new CustomResponseException(HttpStatus.BAD_REQUEST, "해당 카테고리가 존재하지 않습니다.");
+        }
+        Post post = new Post(requestDto, userDetails.getUser(), checkCategory.get());
         Post savedPost = postRepository.save(post);
 
         return ResponseEntity.status(201).body(new PostResponseDto(savedPost));
@@ -84,11 +94,6 @@ public class PostService {
         return ResponseEntity.ok(responseDto);
     }
 
-    protected Post findPost(Long id) {
-        return postRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
-    }
-
 
     @Transactional
     public ResponseEntity<PostResponseDto> likePost(UserDetailsImpl userDetails, Long id) {
@@ -107,5 +112,17 @@ public class PostService {
         currentPost = postRepository.save(currentPost);
 
         return ResponseEntity.ok(new PostResponseDto(currentPost));
+    }
+
+    public List<PostResponseDto> getPostsByCategory(Long categoryId) {
+        return postRepository.findAllByCategory_Id(categoryId)
+                .stream()
+                .map(PostResponseDto::new)
+                .toList();
+    }
+
+    protected Post findPost(Long id) {
+        return postRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
     }
 }

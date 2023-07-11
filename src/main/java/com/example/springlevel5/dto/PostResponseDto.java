@@ -15,6 +15,7 @@ public class PostResponseDto {
     private String title;
     private String content;
     private String username;
+    private String category;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private List<CommentResponseDto> comments;
@@ -25,6 +26,7 @@ public class PostResponseDto {
         this.title = post.getTitle();
         this.content = post.getContent();
         this.username = post.getUsername();
+        this.category = post.getCategory().getName();
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         this.comments = (post.getComments() == null) ? null : post.getComments().stream().map(CommentResponseDto::new).toList();

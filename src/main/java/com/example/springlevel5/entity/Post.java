@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +39,17 @@ public class Post extends Timestamped {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<LikePost> likes;
 
-    public Post(PostRequestDto requestDto, User user) {
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    public Post(PostRequestDto requestDto, User user, Category category) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.user = user;
         this.username = user.getUsername();
         this.likes = new ArrayList<>();
+        this.category = category;
     }
 
     public void update(PostRequestDto requestDto) {
