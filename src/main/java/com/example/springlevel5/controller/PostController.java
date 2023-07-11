@@ -5,6 +5,8 @@ import com.example.springlevel5.dto.PostRequestDto;
 import com.example.springlevel5.dto.PostResponseDto;
 import com.example.springlevel5.security.UserDetailsImpl;
 import com.example.springlevel5.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -54,6 +56,13 @@ public class PostController {
                                                       @PathVariable Long id,
                                                       @RequestBody PostRequestDto requestDto) {
         return postService.updatePost(userDetails, id, requestDto);
+    }
+
+    public void updatePostAnother(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                  @PathVariable Long id,
+                                  @RequestBody PostRequestDto requestDto,
+                                  HttpServletResponse response){
+        postService.updateJQueryPost(userDetails, id, requestDto, response);
     }
 
     // 선택한 게시글 삭제

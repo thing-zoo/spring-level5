@@ -5,10 +5,15 @@ import com.example.springlevel5.dto.PostRequestDto;
 import com.example.springlevel5.dto.PostResponseDto;
 import com.example.springlevel5.entity.LikePost;
 import com.example.springlevel5.entity.Post;
+import com.example.springlevel5.entity.QPost;
 import com.example.springlevel5.entity.User;
 import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.repository.PostRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
+import com.querydsl.core.Tuple;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,12 +26,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.example.springlevel5.entity.Post.qPost;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "Post Service")
 public class PostService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
+    private final JPAQueryFactory jpaQueryFactory;
 
     public ResponseEntity<PostResponseDto> createPost(PostRequestDto requestDto, UserDetailsImpl userDetails) {
         Post post = new Post(requestDto, userDetails.getUser());
@@ -70,6 +78,14 @@ public class PostService {
         return ResponseEntity.status(200).body(new PostResponseDto(post));
     }
 
+    @Transactional
+    public void updateJQueryPost(UserDetailsImpl userDetails, Long id, PostRequestDto requestDto, HttpServletResponse response) {
+        User user = userDetails.getUser();
+        QPost post = new QPost("post");
+        Post post1 = jpaQueryFactory.selectFrom(post).fetchOne();
+
+    }
+
     public ResponseEntity<ErrorResponseDto> deletePost(UserDetailsImpl userDetails, Long id) {
         User user = userDetails.getUser();
         Post post = findPost(id);
@@ -80,6 +96,29 @@ public class PostService {
 
         ErrorResponseDto responseDto = ErrorResponseDto.builder(200, "게시물 삭제 성공")
                 .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @Transactional
+    public ResponseEntity<ErrorResponseDto> deletePostQueryDslTest(Long user_id, Long id) {
+//        User user = userDetails.getUser();
+        ErrorResponseDto responseDto = null;
+        Tuple post = jpaQueryFactory
+                .select(qPost.id, qPost.user.id)
+                .from(qPost)
+                .where(qPost.id.eq(id))
+                .fetchOne();
+
+        if(user_id == post.get(qPost.user.id)){
+            jpaQueryFactory.delete(qPost).where(qPost.id.eq(id)).execute();
+            responseDto = ErrorResponseDto.builder(200, "게시물 삭제 성공")
+                    .build();
+        }
+        else {
+            responseDto = ErrorResponseDto.builder(200, "게시물 삭제 실패")
+                    .build();
+        }
 
         return ResponseEntity.ok(responseDto);
     }

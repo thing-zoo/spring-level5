@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatusCode;
 import java.time.LocalDateTime;
 
 @Getter
-@Builder(builderMethodName = "innerBuilder")
 public class ErrorResponseDto {
 
     LocalDateTime timestamp;
@@ -16,21 +15,57 @@ public class ErrorResponseDto {
     String error;
     String path;
 
+    ErrorResponseDto(ErrorResponseDtoBuilder builder) {
+        timestamp = builder.timestamp;
+        status = builder.status;
+        error = builder.error;
+        path = builder.path;
+    }
 
     public static ErrorResponseDtoBuilder builder(Integer status, String error) {
-        return innerBuilder().timestamp(LocalDateTime.now())
-                .status(HttpStatus.valueOf(status))
-                .error(error);
+        return new ErrorResponseDtoBuilder(status, error);
     }
     public static ErrorResponseDtoBuilder builder(HttpStatus status, String error) {
-        return innerBuilder().timestamp(LocalDateTime.now())
-                .status(status)
-                .error(error);
+        return new ErrorResponseDtoBuilder(status, error);
     }
-    public static ErrorResponseDtoBuilder builder(HttpStatusCode status, String error) {
-        return innerBuilder().timestamp(LocalDateTime.now())
-                .status(HttpStatus.valueOf(status.value()))
-                .error(error);
+
+    public static class ErrorResponseDtoBuilder {
+
+        // 필수 인자
+        private final HttpStatus status;
+        private final String error;
+
+        // 선택 인자 (default 값 셋팅
+        LocalDateTime timestamp = LocalDateTime.now();
+        String path = "/";
+        private ErrorResponseDtoBuilder(){
+            this.status = null;
+            this.error = null;
+        }
+
+        public ErrorResponseDtoBuilder(Integer status, String error) {
+            this.status = HttpStatus.valueOf(status);
+            this.error = error;
+        }
+
+        public ErrorResponseDtoBuilder(HttpStatus status, String error) {
+            this.status = status;
+            this.error = error;
+        }
+
+        public ErrorResponseDtoBuilder timestamp(LocalDateTime date) {
+            this.timestamp = date;
+            return this;
+        }
+
+        public ErrorResponseDtoBuilder path(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public ErrorResponseDto build() {
+            return new ErrorResponseDto(this);
+        }
     }
 }
 /*

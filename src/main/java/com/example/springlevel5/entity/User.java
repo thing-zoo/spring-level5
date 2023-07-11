@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -52,6 +51,10 @@ public class User extends Timestamped {
 
     public boolean equalId(User user){
         return this.id == user.id;
+    }
+
+    public boolean equalId(Long id){
+        return this.id == id;
     }
 
     /**

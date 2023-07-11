@@ -1,0 +1,48 @@
+
+### signup
+POST http://localhost:8080/api/users/signup
+Content-Type: application/json
+
+{
+  "username": "username1",
+  "password": "Password1!"
+}
+
+### login
+POST http://localhost:8080/api/users/login
+Content-Type: application/json
+
+{
+  "username": "username1",
+  "password": "Password1!"
+}
+
+### Get Posts
+GET http://localhost:8080/api/posts
+
+### post blog username one
+POST http://localhost:8080/api/posts
+Content-Type: application/json
+Cookie: Authorization=Bearer%20eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VybmFtZTEiLCJhdXRoIjoiVVNFUiIsImV4cCI6MTY4OTA0Mjc0MywiaWF0IjoxNjg5MDM5MTQzfQ.bGUt1gBXY1pQYwi608bIKmGus6sPQganYUIJKoY8E2U
+
+{
+  "title" : "{title}",
+  "content": "{content}"
+}
+
+### post likes username one
+POST http://localhost:8080/api/posts/1/likes
+Cookie: Authorization=Bearer%20eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VybmFtZTEiLCJhdXRoIjoiVVNFUiIsImV4cCI6MTY4OTA0Mjc0MywiaWF0IjoxNjg5MDM5MTQzfQ.bGUt1gBXY1pQYwi608bIKmGus6sPQganYUIJKoY8E2U
+
+### post comment username one
+POST http://localhost:8080/api/posts/1/comments
+Content-Type: application/json
+Cookie: Authorization=Bearer%20eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VybmFtZTEiLCJhdXRoIjoiVVNFUiIsImV4cCI6MTY4OTA0Mjc0MywiaWF0IjoxNjg5MDM5MTQzfQ.bGUt1gBXY1pQYwi608bIKmGus6sPQganYUIJKoY8E2U
+
+{
+  "content": "{content}"
+}
+
+### post commentlike username one
+POST http://localhost:8080/api/posts/1/comments/1/likes
+Cookie: Authorization=Bearer%20eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VybmFtZTEiLCJhdXRoIjoiVVNFUiIsImV4cCI6MTY4OTA0Mjc0MywiaWF0IjoxNjg5MDM5MTQzfQ.bGUt1gBXY1pQYwi608bIKmGus6sPQganYUIJKoY8E2U
