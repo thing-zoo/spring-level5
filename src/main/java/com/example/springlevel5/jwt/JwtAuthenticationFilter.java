@@ -1,8 +1,8 @@
 package com.example.springlevel5.jwt;
 
 import com.example.springlevel5.dto.UserRequestDto;
-import com.example.springlevel5.entity.UserRoleEnum;
 import com.example.springlevel5.security.UserDetailsImpl;
+import com.example.springlevel5.service.RefreshTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,9 +19,11 @@ import java.io.IOException;
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, RefreshTokenService refreshTokenService) {
         this.jwtUtil = jwtUtil;
+        this.refreshTokenService = refreshTokenService;
         setFilterProcessesUrl("/api/users/login");
     }
 
@@ -47,10 +49,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         log.info("로그인 성공 및 JWT 생성");
-        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
-        UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
+        UserDetailsImpl userDetails = ((UserDetailsImpl) authResult.getPrincipal());
+        createAccessToken(userDetails, response);
+        refreshTokenService.createRefreshToken(userDetails.getUser(), response);
+    }
 
-        String token = jwtUtil.createToken(username, role);
+    protected void createAccessToken(UserDetailsImpl userDetails, HttpServletResponse response){
+        String token = jwtUtil.createToken(userDetails.getUsername(), userDetails.getUser().getRole());
         jwtUtil.addJwtToCookie(token, response);
     }
 

@@ -3,7 +3,6 @@ package com.example.springlevel5.entity;
 import com.example.springlevel5.dto.CommentRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;

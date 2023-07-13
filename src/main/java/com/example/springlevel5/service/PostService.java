@@ -11,7 +11,6 @@ import com.example.springlevel5.repository.LikeRepository;
 import com.example.springlevel5.repository.PostRepository;
 import com.example.springlevel5.security.UserDetailsImpl;
 import com.querydsl.core.Tuple;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

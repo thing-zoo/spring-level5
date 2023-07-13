@@ -24,12 +24,16 @@ import java.util.Date;
 public class JwtUtil {
     // Header KEY 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    // RefreshToken Header KEY 값
+    public static final String REFRESH_TOKEN_HEADER = "RefreshToken";
     // 사용자 권한 값의 KEY
     public static final String AUTHORIZATION_KEY = "auth";
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
     // 토큰 만료시간
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 60분
+    private final long TOKEN_TIME = 10 * 60 * 1000L; // 10분
+    private final long REFRESH_TOKEN_TIME = 60 * 60 * 1000L; // 60분
 
     @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
     private String secretKey;
@@ -56,6 +60,18 @@ public class JwtUtil {
                         .compact();
     }
 
+    public String createTokenSetSubject(String subject) {
+        Date date = new Date();
+
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .setSubject(subject) // random uuid
+                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // 만료 시간
+                        .setIssuedAt(date) // 발급일
+                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                        .compact();
+    }
+
     // JWT Cookie 에 저장
     public void addJwtToCookie(String token, HttpServletResponse res) {
         try {
@@ -69,6 +85,41 @@ public class JwtUtil {
 
             // Response 객체에 Cookie 추가
             res.addCookie(cookie);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage());
+        }
+    }
+    public void addJwtToCookieWithTokenName(String token, String tokenName, HttpServletResponse res) {
+        try {
+            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
+
+            Cookie cookie = new Cookie(tokenName, token); // Name-Value
+            cookie.setPath("/");
+            cookie.setMaxAge(60 * 60);
+            cookie.setSecure(true);
+            cookie.setHttpOnly(true);
+
+            // Response 객체에 Cookie 추가
+            res.addCookie(cookie);
+
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void addJwtToCookieWithHeaderName(String token, String tokenName, HttpServletResponse res) {
+        try {
+            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
+
+//            Cookie cookie = new Cookie(tokenName, token); // Name-Value
+//            cookie.setPath("/");
+//            cookie.setMaxAge(60 * 60);
+//            cookie.setSecure(true);
+//            cookie.setHttpOnly(true);
+
+            // Response 객체에 Cookie 추가
+            res.addHeader(tokenName, token);
+
         } catch (UnsupportedEncodingException e) {
             log.error(e.getMessage());
         }
@@ -120,6 +171,18 @@ public class JwtUtil {
                         return null;
                     }
                 }
+            }
+        }
+        return null;
+    }
+
+    public String getTokenFromHeaderTokenName(HttpServletRequest req, String TokenName) {
+        String header = req.getHeader(TokenName);
+        if(header != null) {
+            try {
+                return URLDecoder.decode(header, "UTF-8"); // Encode 되어 넘어간 Value 다시 Decode
+            } catch (UnsupportedEncodingException e) {
+                return null;
             }
         }
         return null;
